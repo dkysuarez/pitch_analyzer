@@ -1,5 +1,5 @@
+git+https://github.com/jldbc/pybaseball.git
 streamlit>=1.32.0
-pybaseball>=2.2.7
 pandas>=2.0.0
 numpy>=1.26.0
 plotly>=5.20.0
