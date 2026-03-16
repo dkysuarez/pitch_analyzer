@@ -1,10 +1,10 @@
 """
 app.py
 ======
-Punto de entrada del dashboard Pitch Effectiveness Analyzer.
-Conecta data_loader → metrics → charts en una interfaz Streamlit.
+Entry point for the Pitch Effectiveness Analyzer dashboard.
+Connects data_loader → metrics → charts in a Streamlit interface.
 
-Ejecutar con:
+Run with:
     streamlit run app.py
 """
 
@@ -29,7 +29,7 @@ from charts import (
     chart_velocity,
 )
 
-# ─── Configuración de página ──────────────────────────────────────────────────
+# ─── Page configuration ───────────────────────────────────────────────────────
 
 st.set_page_config(
     page_title="Pitch Analyzer | MLB Statcast",
@@ -38,18 +38,18 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ─── CSS personalizado ────────────────────────────────────────────────────────
+# ─── Custom CSS ───────────────────────────────────────────────────────────────
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-/* Reset y base */
+/* Reset and base */
 html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
 
-/* Fondo principal oscuro */
+/* Dark main background */
 .stApp {
     background-color: #0B1120;
     color: #E8EDF5;
@@ -68,12 +68,12 @@ html, body, [class*="css"] {
     letter-spacing: 0.08em;
 }
 
-/* Títulos con Syne */
+/* Syne font for headings */
 h1, h2, h3 {
     font-family: 'Syne', sans-serif !important;
 }
 
-/* Header principal */
+/* Main header */
 .main-header {
     padding: 2rem 0 1.5rem 0;
     border-bottom: 1px solid #1E2D45;
@@ -151,13 +151,13 @@ h1, h2, h3 {
     gap: 0.5rem;
 }
 
-/* Métricas tabla */
+/* Metrics table */
 .stDataFrame {
     border-radius: 8px;
     overflow: hidden;
 }
 
-/* Selectbox y widgets en sidebar */
+/* Sidebar selectbox and widgets */
 [data-testid="stSidebar"] .stSelectbox > div > div,
 [data-testid="stSidebar"] .stMultiSelect > div > div {
     background-color: #1A2535 !important;
@@ -166,7 +166,7 @@ h1, h2, h3 {
     border-radius: 8px;
 }
 
-/* Pills de info */
+/* Info pills */
 .info-pill {
     display: inline-block;
     background: #1A2A3A;
@@ -191,7 +191,7 @@ h1, h2, h3 {
     fill: transparent !important;
 }
 
-/* Sidebar logo area */
+/* Sidebar brand area */
 .sidebar-brand {
     font-family: 'Syne', sans-serif;
     font-size: 1.1rem;
@@ -207,7 +207,7 @@ h1, h2, h3 {
     letter-spacing: 0.1em;
 }
 
-/* Estado vacío */
+/* Empty state */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -230,7 +230,7 @@ h1, h2, h3 {
     line-height: 1.6;
 }
 
-/* Toggle radio como botones */
+/* Radio buttons styled as toggle pills */
 div[data-testid="stRadio"] > div {
     flex-direction: row;
     gap: 0.5rem;
@@ -256,7 +256,7 @@ div[data-testid="stRadio"] label span {
 """, unsafe_allow_html=True)
 
 
-# ─── Helpers de UI ────────────────────────────────────────────────────────────
+# ─── UI helpers ───────────────────────────────────────────────────────────────
 
 def kpi_card(label: str, value: str, sub: str = "") -> str:
     return f"""
@@ -281,30 +281,30 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Búsqueda de pitcher ──
-    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Buscar Pitcher</p>', unsafe_allow_html=True)
+    # ── Pitcher search ──
+    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Search Pitcher</p>', unsafe_allow_html=True)
     pitcher_name = st.text_input(
         label="pitcher_search",
-        placeholder="Ej: Gerrit Cole, Sandy Alcantara...",
+        placeholder="e.g. Gerrit Cole, Sandy Alcantara...",
         label_visibility="collapsed",
     )
 
-    pitcher_id   = None
+    pitcher_id    = None
     pitcher_label = None
 
     if pitcher_name and len(pitcher_name) >= 3:
-        with st.spinner("Buscando..."):
+        with st.spinner("Searching..."):
             results = search_pitcher(pitcher_name)
 
         if results.empty:
-            st.warning("No se encontró ningún pitcher con ese nombre.")
+            st.warning("No pitcher found with that name.")
         else:
             options = {
                 f"{row['name_first']} {row['name_last']} (ID: {row['key_mlbam']})": int(row["key_mlbam"])
                 for _, row in results.iterrows()
             }
             selected = st.selectbox(
-                label="Seleccionar",
+                label="Select",
                 options=list(options.keys()),
                 label_visibility="collapsed",
             )
@@ -313,8 +313,8 @@ with st.sidebar:
 
     st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
-    # ── Temporada ──
-    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Temporada</p>', unsafe_allow_html=True)
+    # ── Season ──
+    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Season</p>', unsafe_allow_html=True)
     season = st.selectbox(
         label="season",
         options=[2024, 2023, 2022, 2021, 2020, 2019],
@@ -323,20 +323,20 @@ with st.sidebar:
 
     st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
-    # ── Mano del bateador ──
-    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Mano del Bateador</p>', unsafe_allow_html=True)
+    # ── Batter handedness ──
+    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Batter Handedness</p>', unsafe_allow_html=True)
     batter_hand = st.radio(
         label="batter_hand",
-        options=["Todos", "Zurdo (L)", "Diestro (R)"],
+        options=["All", "Left (L)", "Right (R)"],
         label_visibility="collapsed",
         horizontal=True,
     )
-    hand_filter_map = {"Todos": None, "Zurdo (L)": "L", "Diestro (R)": "R"}
+    hand_filter_map = {"All": None, "Left (L)": "L", "Right (R)": "R"}
     hand_filter = hand_filter_map[batter_hand]
 
     st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
-    # ── Filtro de pitch types (solo visible cuando hay data) ──
+    # ── Pitch type filter (visible only when data is loaded) ──
     pitch_filter_placeholder = st.empty()
 
     st.markdown("""
@@ -355,30 +355,30 @@ with st.sidebar:
 st.markdown("""
 <div class="main-header">
     <div class="main-title">Pitch <span class="accent">Effectiveness</span> Analyzer</div>
-    <div class="main-subtitle">Análisis cuantitativo de pitcheos MLB · Powered by Statcast</div>
+    <div class="main-subtitle">Quantitative MLB pitch analysis · Powered by Statcast</div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ── Estado vacío (sin pitcher seleccionado) ───────────────────────────────────
+# ── Empty state (no pitcher selected) ────────────────────────────────────────
 
 if pitcher_id is None:
     st.markdown("""
     <div class="empty-state">
         <div class="empty-state-icon">⚾</div>
-        <div class="empty-state-title">Busca un pitcher para comenzar</div>
+        <div class="empty-state-title">Search for a pitcher to get started</div>
         <div class="empty-state-text">
-            Escribe al menos 3 letras del nombre en el panel izquierdo.<br>
-            Los datos provienen de Baseball Savant (Statcast) en tiempo real.
+            Type at least 3 letters of the pitcher's name in the left panel.<br>
+            Data is sourced from Baseball Savant (Statcast) in real time.
         </div>
     </div>
     """, unsafe_allow_html=True)
     st.stop()
 
 
-# ── Carga de datos ────────────────────────────────────────────────────────────
+# ── Data loading ──────────────────────────────────────────────────────────────
 
-with st.spinner(f"Cargando datos de {pitcher_label} — Temporada {season}..."):
+with st.spinner(f"Loading data for {pitcher_label} — {season} season..."):
     raw_df = load_pitcher_data(pitcher_id, season)
 
 validation = validate_dataframe(raw_df)
@@ -387,20 +387,21 @@ if not validation["valid"]:
     st.error(f"⚠️ {validation['message']}")
     st.stop()
 
-# Aplicar filtro de mano del bateador si aplica
+# Apply batter handedness filter if selected
 df = raw_df.copy()
 if hand_filter:
     df = df[df["stand"] == hand_filter]
     if len(df) < 20:
-        st.warning(f"Solo {len(df)} pitcheos contra bateadores {'zurdos' if hand_filter == 'L' else 'diestros'}. Considera usar 'Todos'.")
+        side = "left-handed" if hand_filter == "L" else "right-handed"
+        st.warning(f"Only {len(df)} pitches against {side} batters. Consider switching to 'All'.")
 
-# ── Filtro de pitch types en sidebar (dinámico con la data cargada) ───────────
+# ── Pitch type filter in sidebar (built dynamically from loaded data) ─────────
 all_pitch_types = sorted(raw_df["pitch_type"].unique().tolist())
 pitch_name_map  = raw_df.drop_duplicates("pitch_type").set_index("pitch_type")["pitch_name_clean"].to_dict()
 pitch_options   = [f"{pt} — {pitch_name_map.get(pt, pt)}" for pt in all_pitch_types]
 
 with pitch_filter_placeholder:
-    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Tipos de Pitcheo</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#9BAABB;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Pitch Types</p>', unsafe_allow_html=True)
     selected_pitches_raw = st.multiselect(
         label="pitch_types",
         options=pitch_options,
@@ -413,7 +414,7 @@ if selected_pitch_types:
     df = df[df["pitch_type"].isin(selected_pitch_types)]
 
 
-# ── Calcular métricas ─────────────────────────────────────────────────────────
+# ── Calculate metrics ─────────────────────────────────────────────────────────
 
 kpis        = get_summary_kpis(df)
 metrics_df  = get_pitch_metrics(df)
@@ -422,7 +423,7 @@ matchup_df  = get_matchup_metrics(df)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 1 — KPI Cards
+# SECTION 1 — KPI Cards
 # ─────────────────────────────────────────────────────────────────────────────
 
 section_header("📊", f"{pitcher_label} · {season}")
@@ -431,47 +432,47 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.markdown(kpi_card(
-        "Total Pitcheos",
+        "Total Pitches",
         f"{kpis.get('total_pitches', 0):,}",
-        f"{kpis.get('total_games', 0)} juegos"
+        f"{kpis.get('total_games', 0)} games"
     ), unsafe_allow_html=True)
 
 with col2:
     st.markdown(kpi_card(
         "Pitch Types",
         str(kpis.get("unique_pitch_types", 0)),
-        "en su arsenal"
+        "in his arsenal"
     ), unsafe_allow_html=True)
 
 with col3:
     st.markdown(kpi_card(
-        "Whiff Rate Global",
+        "Global Whiff Rate",
         f"{kpis.get('global_whiff_rate', 0)}%",
-        "todos los pitcheos"
+        "all pitch types"
     ), unsafe_allow_html=True)
 
 with col4:
     st.markdown(kpi_card(
-        "Pitch Principal",
+        "Primary Pitch",
         kpis.get("primary_pitch", "—"),
-        "más utilizado"
+        "most used"
     ), unsafe_allow_html=True)
 
 with col5:
     st.markdown(kpi_card(
-        "Velocidad Principal",
+        "Primary Pitch Velo",
         f"{kpis.get('primary_pitch_velo', 0)} MPH",
-        "promedio pitch principal"
+        "average velocity"
     ), unsafe_allow_html=True)
 
 st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 2 — Arsenal y Velocidad
+# SECTION 2 — Arsenal and Velocity
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("🎯", "Arsenal del Pitcher")
+section_header("🎯", "Pitcher Arsenal")
 
 col_left, col_right = st.columns([1.4, 1], gap="large")
 
@@ -491,20 +492,20 @@ with col_right:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 3 — Tabla de métricas
+# SECTION 3 — Metrics Table
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("📋", "Métricas de Efectividad por Pitch Type")
+section_header("📋", "Effectiveness Metrics by Pitch Type")
 
 display_cols = {
-    "pitch_name_clean":   "Tipo de Pitcheo",
-    "count":              "Lanzamientos",
-    "uso_pct":            "Uso %",
-    "avg_velocity":       "Vel. Prom (MPH)",
-    "avg_spin_rate":      "Spin Rate (RPM)",
-    "whiff_rate":         "Whiff Rate %",
-    "called_strike_pct":  "Called Strike %",
-    "put_away_rate":      "Put-Away Rate %",
+    "pitch_name_clean":  "Pitch Type",
+    "count":             "Pitches",
+    "uso_pct":           "Usage %",
+    "avg_velocity":      "Avg Velocity (MPH)",
+    "avg_spin_rate":     "Spin Rate (RPM)",
+    "whiff_rate":        "Whiff Rate %",
+    "called_strike_pct": "Called Strike %",
+    "put_away_rate":     "Put-Away Rate %",
 }
 
 if not metrics_df.empty:
@@ -516,10 +517,10 @@ if not metrics_df.empty:
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Uso %":             st.column_config.ProgressColumn("Uso %", min_value=0, max_value=100, format="%.1f%%"),
-            "Whiff Rate %":      st.column_config.ProgressColumn("Whiff Rate %", min_value=0, max_value=60, format="%.1f%%"),
-            "Put-Away Rate %":   st.column_config.ProgressColumn("Put-Away Rate %", min_value=0, max_value=100, format="%.1f%%"),
-            "Called Strike %":   st.column_config.ProgressColumn("Called Strike %", min_value=0, max_value=50, format="%.1f%%"),
+            "Usage %":        st.column_config.ProgressColumn("Usage %",        min_value=0, max_value=100, format="%.1f%%"),
+            "Whiff Rate %":   st.column_config.ProgressColumn("Whiff Rate %",   min_value=0, max_value=60,  format="%.1f%%"),
+            "Put-Away Rate %":st.column_config.ProgressColumn("Put-Away Rate %",min_value=0, max_value=100, format="%.1f%%"),
+            "Called Strike %":st.column_config.ProgressColumn("Called Strike %",min_value=0, max_value=50,  format="%.1f%%"),
         },
     )
 
@@ -527,10 +528,10 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 4 — Efectividad y Heatmap de Conteos
+# SECTION 4 — Effectiveness and Count Heatmap
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("🔥", "Efectividad y Estrategia por Conteo")
+section_header("🔥", "Effectiveness and Count Strategy")
 
 col_eff, col_heat = st.columns([1, 1], gap="large")
 
@@ -552,15 +553,15 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 5 — Matchup Zurdo vs Diestro
+# SECTION 5 — Matchup by Batter Handedness
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("↔️", "Matchup por Mano del Bateador")
+section_header("↔️", "Matchup by Batter Handedness")
 
 matchup_metric = st.radio(
-    label="Métrica matchup",
+    label="Matchup metric",
     options=["whiff_rate", "uso_pct"],
-    format_func=lambda x: "Whiff Rate %" if x == "whiff_rate" else "Uso %",
+    format_func=lambda x: "Whiff Rate %" if x == "whiff_rate" else "Usage %",
     horizontal=True,
     label_visibility="collapsed",
 )
@@ -575,28 +576,28 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECCIÓN 6 — Localización de Pitcheos
+# SECTION 6 — Pitch Location
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("📍", "Localización de Pitcheos en la Zona")
+section_header("📍", "Pitch Location in the Strike Zone")
 
 col_filter1, col_filter2, _ = st.columns([1, 1, 2])
 
 with col_filter1:
     result_filter = st.selectbox(
-        label="Filtrar por resultado",
+        label="Filter by outcome",
         options=["all", "whiff", "strike", "hit"],
         format_func=lambda x: {
-            "all":    "Todos los pitcheos",
-            "whiff":  "Solo Whiffs (swing y miss)",
-            "strike": "Solo Strikes (whiff + called)",
-            "hit":    "Solo Hit Into Play",
+            "all":    "All pitches",
+            "whiff":  "Whiffs only (swing and miss)",
+            "strike": "Strikes only (whiff + called)",
+            "hit":    "Hit into play only",
         }[x],
     )
 
 with col_filter2:
     max_pitches = st.slider(
-        label="Máx. puntos a mostrar",
+        label="Max points to display",
         min_value=100,
         max_value=min(3000, len(df)),
         value=min(1500, len(df)),
@@ -605,7 +606,7 @@ with col_filter2:
 
 location_df = get_location_data(df, pitch_types=selected_pitch_types or None, result_filter=result_filter)
 
-# Limitar cantidad de puntos para rendimiento
+# Cap number of points for performance
 if len(location_df) > max_pitches:
     location_df = location_df.sample(max_pitches, random_state=42)
 
@@ -619,8 +620,8 @@ st.plotly_chart(
 st.markdown("""
 <div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #1A2535; text-align: center;">
     <p style="font-size: 0.72rem; color: #2A4060; font-family: 'DM Sans', sans-serif;">
-        Datos: Baseball Savant (Statcast) via pybaseball · Solo temporada regular MLB ·
-        Proyecto de Mentoría — Analista de Datos Béisbol
+        Data: Baseball Savant (Statcast) via pybaseball · Regular season only ·
+        Data Analytics Mentorship Project
     </p>
 </div>
 """, unsafe_allow_html=True)
