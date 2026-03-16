@@ -1,38 +1,38 @@
 """
 charts.py
 =========
-Responsabilidad: Construir todas las visualizaciones interactivas
-del dashboard usando Plotly Express y Plotly Graph Objects.
+Responsibility: Build all interactive visualizations for the dashboard
+using Plotly Graph Objects.
 
-Reglas de este módulo:
-- Solo recibe DataFrames o dicts (salida de metrics.py)
-- Solo devuelve figuras de Plotly (go.Figure)
-- Sin lógica de negocio, sin llamadas a APIs, sin Streamlit
-- Paleta de colores consistente en todas las gráficas
+Rules for this module:
+- Only receives DataFrames or dicts (output of metrics.py)
+- Only returns Plotly figures (go.Figure)
+- No business logic, no API calls, no Streamlit
+- Consistent color palette across all charts
 """
 
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
-# ─── Paleta de colores por pitch type ─────────────────────────────────────────
-# Colores consistentes en TODAS las gráficas del dashboard
+# ─── Color palette by pitch type ──────────────────────────────────────────────
+# Consistent colors used across ALL charts in the dashboard
 PITCH_COLORS = {
-    "FF": "#E63946",  # 4-Seam Fastball  — rojo
-    "SI": "#F4845F",  # Sinker           — naranja rojizo
-    "FC": "#F4A261",  # Cutter           — naranja
-    "SL": "#2A9D8F",  # Slider           — verde azulado
-    "CH": "#457B9D",  # Changeup         — azul medio
-    "CU": "#1D3557",  # Curveball        — azul oscuro
-    "FS": "#8338EC",  # Splitter         — violeta
-    "ST": "#06D6A0",  # Sweeper          — verde menta
-    "KC": "#118AB2",  # Knuckle Curve    — azul
-    "KN": "#FFB703",  # Knuckleball      — amarillo
+    "FF": "#E63946",  # 4-Seam Fastball  — red
+    "SI": "#F4845F",  # Sinker           — reddish orange
+    "FC": "#F4A261",  # Cutter           — orange
+    "SL": "#2A9D8F",  # Slider           — teal
+    "CH": "#457B9D",  # Changeup         — medium blue
+    "CU": "#1D3557",  # Curveball        — dark blue
+    "FS": "#8338EC",  # Splitter         — violet
+    "ST": "#06D6A0",  # Sweeper          — mint green
+    "KC": "#118AB2",  # Knuckle Curve    — blue
+    "KN": "#FFB703",  # Knuckleball      — yellow
 }
-DEFAULT_COLOR  = "#AAAAAA"
-BACKGROUND     = "rgba(0,0,0,0)"   # transparente — Streamlit maneja el fondo
-GRID_COLOR     = "rgba(200,200,200,0.3)"
-FONT_FAMILY    = "Inter, Arial, sans-serif"
+DEFAULT_COLOR = "#AAAAAA"
+BACKGROUND    = "rgba(0,0,0,0)"    # transparent — Streamlit handles the background
+GRID_COLOR    = "rgba(200,200,200,0.3)"
+FONT_FAMILY   = "Inter, Arial, sans-serif"
 
 
 def _color(pt: str) -> str:
@@ -44,7 +44,7 @@ def _color_list(series: pd.Series) -> list:
 
 
 def _base_layout(fig: go.Figure, title: str = "") -> go.Figure:
-    """Aplica el layout base consistente a cualquier figura."""
+    """Applies the consistent base layout to any figure."""
     fig.update_layout(
         title=dict(
             text=title,
@@ -66,12 +66,12 @@ def _base_layout(fig: go.Figure, title: str = "") -> go.Figure:
     return fig
 
 
-# ─── 1. Barras horizontales: Distribución de Uso ──────────────────────────────
+# ─── 1. Horizontal bars: Usage Distribution ───────────────────────────────────
 
 def chart_pitch_usage(metrics_df: pd.DataFrame) -> go.Figure:
     """
-    Barras horizontales con el % de uso de cada tipo de pitcheo.
-    Responde: ¿Cuál es el arsenal completo de este pitcher?
+    Horizontal bar chart showing the usage % of each pitch type.
+    Answers: What is this pitcher's full arsenal?
     """
     if metrics_df.empty:
         return go.Figure()
@@ -87,15 +87,15 @@ def chart_pitch_usage(metrics_df: pd.DataFrame) -> go.Figure:
         textposition="outside",
         hovertemplate=(
             "<b>%{y}</b><br>"
-            "Uso: %{x:.1f}%<br>"
-            "Lanzamientos: %{customdata}<extra></extra>"
+            "Usage: %{x:.1f}%<br>"
+            "Pitches: %{customdata}<extra></extra>"
         ),
         customdata=df["count"],
     ))
 
-    fig = _base_layout(fig, "Distribución de Uso por Tipo de Pitcheo")
+    fig = _base_layout(fig, "Usage Distribution by Pitch Type")
     fig.update_layout(
-        xaxis_title="Uso (%)",
+        xaxis_title="Usage (%)",
         yaxis_title="",
         showlegend=False,
         height=max(250, len(df) * 55),
@@ -104,12 +104,12 @@ def chart_pitch_usage(metrics_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ─── 2. Barras agrupadas: Efectividad (Whiff + Called Strike) ─────────────────
+# ─── 2. Grouped bars: Effectiveness (Whiff + Called Strike) ───────────────────
 
 def chart_effectiveness(metrics_df: pd.DataFrame) -> go.Figure:
     """
-    Barras agrupadas comparando whiff_rate y called_strike_pct por pitch type.
-    Responde: ¿Cuál es el pitch más difícil de batear?
+    Grouped bar chart comparing whiff_rate and called_strike_pct by pitch type.
+    Answers: Which pitch is the hardest to hit?
     """
     if metrics_df.empty:
         return go.Figure()
@@ -136,28 +136,28 @@ def chart_effectiveness(metrics_df: pd.DataFrame) -> go.Figure:
         hovertemplate="<b>%{x}</b><br>Called Strike: %{y:.1f}%<extra></extra>",
     ))
 
-    fig = _base_layout(fig, "Efectividad por Tipo de Pitcheo")
+    fig = _base_layout(fig, "Effectiveness by Pitch Type")
     fig.update_layout(
         barmode="group",
-        yaxis_title="Porcentaje (%)",
+        yaxis_title="Percentage (%)",
         xaxis_title="",
         height=400,
     )
     return fig
 
 
-# ─── 3. Heatmap: Pitch Dominante por Conteo Balls-Strikes ─────────────────────
+# ─── 3. Heatmap: Dominant Pitch by Balls-Strikes Count ────────────────────────
 
 def chart_count_heatmap(count_df: pd.DataFrame) -> go.Figure:
     """
-    Heatmap 4×3 (balls × strikes) mostrando el pitch dominante
-    y su % de uso en cada conteo.
-    Responde: ¿En 3-2 qué lanza este pitcher?
+    4x3 heatmap (balls x strikes) showing the dominant pitch
+    and its usage % in each count.
+    Answers: What does this pitcher throw in a 3-2 count?
 
     Parameters
     ----------
     count_df : pd.DataFrame
-        Salida de metrics.get_dominant_pitch_per_count()
+        Output of metrics.get_dominant_pitch_per_count()
     """
     if count_df.empty:
         return go.Figure()
@@ -165,10 +165,10 @@ def chart_count_heatmap(count_df: pd.DataFrame) -> go.Figure:
     balls_range   = [0, 1, 2, 3]
     strikes_range = [0, 1, 2]
 
-    # Matrices para texto, valor numérico y hover
-    z_vals  = [[0.0] * len(balls_range) for _ in strikes_range]
-    z_text  = [[""]  * len(balls_range) for _ in strikes_range]
-    hover   = [[""]  * len(balls_range) for _ in strikes_range]
+    # Matrices for text, numeric value, and hover
+    z_vals = [[0.0] * len(balls_range) for _ in strikes_range]
+    z_text = [[""]  * len(balls_range) for _ in strikes_range]
+    hover  = [[""]  * len(balls_range) for _ in strikes_range]
 
     for _, row in count_df.iterrows():
         b = int(row["balls"])
@@ -181,7 +181,7 @@ def chart_count_heatmap(count_df: pd.DataFrame) -> go.Figure:
             pname = row.get("pitch_name_clean", pt)
             z_vals[si][bi] = float(pct)
             z_text[si][bi] = f"<b>{pt}</b><br>{pct:.0f}%"
-            hover[si][bi]  = f"Conteo {b}-{s}<br>{pname}<br>Uso en conteo: {pct:.1f}%"
+            hover[si][bi]  = f"Count {b}-{s}<br>{pname}<br>Usage in count: {pct:.1f}%"
 
     fig = go.Figure(go.Heatmap(
         z=z_vals,
@@ -195,12 +195,12 @@ def chart_count_heatmap(count_df: pd.DataFrame) -> go.Figure:
             [1.0, "#1A3C5E"],
         ],
         showscale=True,
-        colorbar=dict(title="Uso %", tickfont=dict(size=11)),
+        colorbar=dict(title="Usage %", tickfont=dict(size=11)),
         hovertemplate="%{customdata}<extra></extra>",
         customdata=hover,
     ))
 
-    fig = _base_layout(fig, "Pitch Dominante por Conteo (Balls-Strikes)")
+    fig = _base_layout(fig, "Dominant Pitch by Count (Balls-Strikes)")
     fig.update_layout(
         height=320,
         xaxis=dict(side="top", gridcolor=GRID_COLOR),
@@ -209,30 +209,30 @@ def chart_count_heatmap(count_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ─── 4. Barras agrupadas: Matchup Zurdo vs Diestro ────────────────────────────
+# ─── 4. Grouped bars: Matchup — Left vs Right ─────────────────────────────────
 
 def chart_matchup(matchup_df: pd.DataFrame, metric: str = "whiff_rate") -> go.Figure:
     """
-    Barras agrupadas L vs R por pitch type.
-    Responde: ¿El slider es mejor contra zurdos o diestros?
+    Grouped bar chart L vs R by pitch type.
+    Answers: Is the slider better against left-handed or right-handed batters?
 
     Parameters
     ----------
     matchup_df : pd.DataFrame
-        Salida de metrics.get_matchup_metrics()
+        Output of metrics.get_matchup_metrics()
     metric : str
-        "whiff_rate" o "uso_pct"
+        "whiff_rate" or "uso_pct"
     """
     if matchup_df.empty:
         return go.Figure()
 
-    label_map = {"whiff_rate": "Whiff Rate (%)", "uso_pct": "Uso (%)"}
+    label_map = {"whiff_rate": "Whiff Rate (%)", "uso_pct": "Usage (%)"}
     title_map = {
-        "whiff_rate": "Whiff Rate por Mano del Bateador",
-        "uso_pct":    "Uso (%) por Mano del Bateador",
+        "whiff_rate": "Whiff Rate by Batter Handedness",
+        "uso_pct":    "Usage (%) by Batter Handedness",
     }
 
-    # Orden de pitches por uso promedio
+    # Order pitches by average usage
     pitch_order = (
         matchup_df.groupby("pitch_name_clean")["uso_pct"]
         .mean()
@@ -246,21 +246,21 @@ def chart_matchup(matchup_df: pd.DataFrame, metric: str = "whiff_rate") -> go.Fi
     fig = go.Figure()
 
     fig.add_trace(go.Bar(
-        name="vs Zurdo (L)",
+        name="vs Left (L)",
         x=left_df["pitch_name_clean"],
         y=left_df[metric],
         marker_color="#E63946",
         opacity=0.85,
-        hovertemplate="<b>%{x}</b><br>vs Zurdo: %{y:.1f}%<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>vs Left: %{y:.1f}%<extra></extra>",
     ))
 
     fig.add_trace(go.Bar(
-        name="vs Diestro (R)",
+        name="vs Right (R)",
         x=right_df["pitch_name_clean"],
         y=right_df[metric],
         marker_color="#457B9D",
         opacity=0.85,
-        hovertemplate="<b>%{x}</b><br>vs Diestro: %{y:.1f}%<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>vs Right: %{y:.1f}%<extra></extra>",
     ))
 
     fig = _base_layout(fig, title_map.get(metric, metric))
@@ -273,26 +273,26 @@ def chart_matchup(matchup_df: pd.DataFrame, metric: str = "whiff_rate") -> go.Fi
     return fig
 
 
-# ─── 5. Scatter: Localización de Pitcheos en la Zona ─────────────────────────
+# ─── 5. Scatter: Pitch Location in the Strike Zone ────────────────────────────
 
 def chart_pitch_location(location_df: pd.DataFrame) -> go.Figure:
     """
-    Scatter plot plate_x vs plate_z, coloreado por pitch type.
-    Dibuja el strike zone como referencia visual.
-    Responde: ¿A qué zonas apunta este pitcher con cada tipo de pitcheo?
+    Scatter plot of plate_x vs plate_z, colored by pitch type.
+    Draws the strike zone as a visual reference.
+    Answers: What zones does this pitcher target with each pitch type?
 
     Parameters
     ----------
     location_df : pd.DataFrame
-        Salida de metrics.get_location_data()
+        Output of metrics.get_location_data()
     """
     if location_df.empty:
         return go.Figure()
 
     fig = go.Figure()
 
-    # ── Strike zone estándar MLB ──
-    # Horizontal: ±0.83 pies | Vertical: 1.5 – 3.5 pies
+    # ── Standard MLB strike zone ──
+    # Horizontal: ±0.83 ft | Vertical: 1.5 – 3.5 ft
     fig.add_shape(
         type="rect",
         x0=-0.83, x1=0.83, y0=1.5, y1=3.5,
@@ -300,7 +300,7 @@ def chart_pitch_location(location_df: pd.DataFrame) -> go.Figure:
         fillcolor="rgba(0,0,0,0)",
     )
 
-    # ── Home plate (referencia visual) ──
+    # ── Home plate (visual reference) ──
     fig.add_shape(
         type="rect",
         x0=-0.71, x1=0.71, y0=0.0, y1=0.15,
@@ -308,7 +308,7 @@ def chart_pitch_location(location_df: pd.DataFrame) -> go.Figure:
         fillcolor="rgba(200,200,200,0.3)",
     )
 
-    # ── Un trace por pitch type → leyenda interactiva ──
+    # ── One trace per pitch type → interactive legend ──
     for pt in location_df["pitch_type"].unique():
         subset = location_df[location_df["pitch_type"] == pt]
         pname  = subset["pitch_name_clean"].iloc[0]
@@ -327,30 +327,30 @@ def chart_pitch_location(location_df: pd.DataFrame) -> go.Figure:
             hovertemplate=(
                 f"<b>{pname}</b><br>"
                 "Horizontal: %{x:.2f} ft<br>"
-                "Vertical: %{y:.2f} ft<br>"
-                "Resultado: %{customdata}<extra></extra>"
+                "Height: %{y:.2f} ft<br>"
+                "Outcome: %{customdata}<extra></extra>"
             ),
             customdata=subset["description"],
         ))
 
-    fig = _base_layout(fig, "Localización de Pitcheos en la Zona")
+    fig = _base_layout(fig, "Pitch Location in the Strike Zone")
     fig.update_layout(
         xaxis=dict(
-            title="Horizontal (pies desde el centro del plato)",
+            title="Horizontal (feet from plate center)",
             range=[-2.5, 2.5],
             zeroline=True,
             zerolinecolor="#CCCCCC",
             gridcolor=GRID_COLOR,
         ),
         yaxis=dict(
-            title="Altura (pies desde el suelo)",
+            title="Height (feet from ground)",
             range=[-0.5, 5.5],
             zeroline=False,
             gridcolor=GRID_COLOR,
         ),
         height=520,
         legend=dict(
-            title="Tipo de Pitcheo",
+            title="Pitch Type",
             itemclick="toggle",
             itemdoubleclick="toggleothers",
         ),
@@ -369,12 +369,12 @@ def chart_pitch_location(location_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ─── 6. Lollipop: Velocidad promedio por Pitch Type ───────────────────────────
+# ─── 6. Lollipop: Average Velocity by Pitch Type ──────────────────────────────
 
 def chart_velocity(metrics_df: pd.DataFrame) -> go.Figure:
     """
-    Gráfico tipo lollipop con la velocidad promedio por pitch type.
-    Responde: ¿Cuánto más rápido es su fastball vs su slider?
+    Lollipop chart showing average velocity by pitch type.
+    Answers: How much faster is the fastball than the slider?
     """
     if metrics_df.empty:
         return go.Figure()
@@ -384,7 +384,7 @@ def chart_velocity(metrics_df: pd.DataFrame) -> go.Figure:
 
     fig = go.Figure()
 
-    # Líneas horizontales (tallo del lollipop)
+    # Horizontal lines (lollipop stems)
     for _, row in df.iterrows():
         fig.add_shape(
             type="line",
@@ -393,7 +393,7 @@ def chart_velocity(metrics_df: pd.DataFrame) -> go.Figure:
             line=dict(color="#DDDDDD", width=1.5),
         )
 
-    # Puntos con etiqueta
+    # Points with label
     fig.add_trace(go.Scatter(
         x=df["avg_velocity"],
         y=df["pitch_name_clean"],
@@ -406,14 +406,14 @@ def chart_velocity(metrics_df: pd.DataFrame) -> go.Figure:
         text=df["avg_velocity"].apply(lambda v: f"{v:.1f}"),
         textposition="middle right",
         textfont=dict(size=11, color="#333333"),
-        hovertemplate="<b>%{y}</b><br>Velocidad: %{x:.1f} MPH<extra></extra>",
+        hovertemplate="<b>%{y}</b><br>Velocity: %{x:.1f} MPH<extra></extra>",
         showlegend=False,
     ))
 
-    fig = _base_layout(fig, "Velocidad Promedio por Tipo de Pitcheo (MPH)")
+    fig = _base_layout(fig, "Average Velocity by Pitch Type (MPH)")
     fig.update_layout(
         xaxis=dict(
-            title="Velocidad (MPH)",
+            title="Velocity (MPH)",
             range=[v_min - 2, df["avg_velocity"].max() + 5],
             gridcolor=GRID_COLOR,
         ),
