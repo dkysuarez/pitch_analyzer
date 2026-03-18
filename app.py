@@ -426,7 +426,7 @@ matchup_df  = get_matchup_metrics(df)
 # SECTION 1 — KPI Cards
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("📊", f"{pitcher_label} · {season}")
+section_header("", f"{pitcher_label} · {season}")
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -472,7 +472,7 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 # SECTION 2 — Arsenal and Velocity
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("🎯", "Pitcher Arsenal")
+section_header("", "Pitcher Arsenal")
 
 col_left, col_right = st.columns([1.4, 1], gap="large")
 
@@ -495,7 +495,7 @@ with col_right:
 # SECTION 3 — Metrics Table
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("📋", "Effectiveness Metrics by Pitch Type")
+section_header("", "Effectiveness Metrics by Pitch Type")
 
 display_cols = {
     "pitch_name_clean":  "Pitch Type",
@@ -531,7 +531,7 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 # SECTION 4 — Effectiveness and Count Heatmap
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("🔥", "Effectiveness and Count Strategy")
+section_header("", "Effectiveness and Count Strategy")
 
 col_eff, col_heat = st.columns([1, 1], gap="large")
 
@@ -556,7 +556,7 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 # SECTION 5 — Matchup by Batter Handedness
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("↔️", "Matchup by Batter Handedness")
+section_header("", "Matchup by Batter Handedness")
 
 matchup_metric = st.radio(
     label="Matchup metric",
@@ -579,7 +579,7 @@ st.markdown("<hr class='custom-divider'>", unsafe_allow_html=True)
 # SECTION 6 — Pitch Location
 # ─────────────────────────────────────────────────────────────────────────────
 
-section_header("📍", "Pitch Location in the Strike Zone")
+section_header("", "Pitch Location in the Strike Zone")
 
 col_filter1, col_filter2, _ = st.columns([1, 1, 2])
 
